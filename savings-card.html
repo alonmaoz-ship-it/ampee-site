@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ampee Savings Calculator</title>
+<style nonce="dXGOXjrmKCeudsttgrLhNQ">
+  :root {
+    --bg: #0a0a0a; --card: #1c1c1e; --card2: #161616;
+    --text: #ffffff; --text2: #e8e8e8; --muted: #6b7280; --muted2: #9ca3af; --dim: #555;
+    --green: #22c55e; --green2: #4ade80; --amber: #f0c040; --battery: #38bdf8;
+    --border: #2a2a2c;
+}
+  html, body { background: transparent; color: var(--text); margin: 0; padding: 0; }
+  .wrap { padding: 4px; }
+
+  .title-row { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+  .title-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 10px var(--green); flex-shrink: 0; }
+  .title { font-size: 14px; font-weight: 700; color: var(--text2); }
+
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+
+  .card { background: var(--card2); border: 1px solid var(--border); border-radius: 16px; padding: 22px 20px; margin-bottom: 16px; }
+  .card-label { font-size: 13px; font-weight: 700; color: var(--text2); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: baseline; }
+  .card-label .val { color: var(--green2); font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; flex-shrink: 0; }
+
+  .car-block { border: 1px solid var(--border); border-radius: 18px; padding: 14px 14px 2px; margin-bottom: 16px; background: rgba(255,255,255,0.015); }
+  .car-block .card { margin-bottom: 14px; }
+  .car-block-label { font-size: 11.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--green2); padding: 0 4px 10px; }
+
+  .batt-detail { margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--border); }
+
+  .seg { display: flex; gap: 6px; }
+  .seg button {
+    flex: 1; background: var(--card); border: 1px solid var(--border); color: var(--muted2);
+    font-family: inherit; font-size: 14px; font-weight: 600; padding: 10px 8px; border-radius: 10px;
+    cursor: pointer; transition: all .12s ease;
+  }
+  .seg button.active { background: var(--green); border-color: var(--green); color: #000; }
+  .zip-input { width: 100%; box-sizing: border-box; background: var(--card2); border: 1px solid var(--border); border-radius: 10px; color: #f1f3ef; font-size: 16px; padding: 12px 14px; letter-spacing: 1px; font-variant-numeric: tabular-nums; }
+  .zip-input::placeholder { color: #7c8079; letter-spacing: 0; }
+  .zip-input:focus { outline: none; border-color: var(--green); }
+  .seg button:hover:not(.active) { border-color: var(--muted); color: var(--text2); }
+  .seg button:focus-visible { outline: 2px solid var(--green2); outline-offset: 2px; }
+
+  input[type="range"] {
+    width: 100%; height: 6px; border-radius: 3px; background: var(--card);
+    -webkit-appearance: none; appearance: none; margin: 8px 0 4px; cursor: pointer;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none; width: 22px; height: 22px; border-radius: 50%;
+    background: var(--green); cursor: pointer; border: 3px solid #0a0a0a; box-shadow: 0 0 0 1px var(--green);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 22px; height: 22px; border-radius: 50%; background: var(--green); cursor: pointer;
+    border: 3px solid #0a0a0a; box-shadow: 0 0 0 1px var(--green);
+  }
+  .range-ticks { display: flex; justify-content: space-between; font-size: 11px; color: var(--dim); font-family: monospace; }
+
+  .hero { text-align: center; padding: 26px 20px 22px; background: linear-gradient(180deg, #122e1c 0%, var(--card2) 100%); border: 1px solid #1e4a2e; border-radius: 16px; margin-bottom: 16px; }
+  .hero-label { font-size: 12.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--green2); margin-bottom: 6px; }
+  .hero-num { font-size: 42px; font-weight: 800; color: var(--green2); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .hero-sub { color: var(--muted2); font-size: 13px; margin-top: 6px; }
+
+  .chart-card { background: var(--card2); border: 1px solid var(--border); border-radius: 16px; padding: 18px 16px 16px; margin-bottom: 16px; }
+  .chart-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+  .chart-title { font-size: 12.5px; font-weight: 700; color: var(--text2); }
+  .chart-readout { font-size: 12.5px; color: var(--muted2); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .chart-readout b { color: var(--green2); font-size: 14px; }
+  #svgChart { display: block; width: 100%; height: auto; touch-action: none; cursor: crosshair; }
+  .chart-legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; font-size: 11px; color: var(--muted2); }
+  .lg-item { display: flex; align-items: center; gap: 5px; }
+  .lg-swatch { width: 12px; height: 8px; border-radius: 2px; display: inline-block; }
+  /* Line swatches mirror what's actually drawn on the chart (a solid line
+     vs. a dashed one) instead of a plain dot for both — a dot reads as "a
+     point on the chart," which isn't what either series is. */
+  .lg-line { width: 16px; height: 0; border-top: 2px solid; display: inline-block; }
+  /* Colors live HERE, not in style="" attributes: the API's CSP
+     (style-src 'self' 'nonce-...') makes browsers drop inline style
+     attributes entirely — chips rendered as colorless nothing in
+     production while looking fine in local tests without the header. */
+  .lg-solar-line { border-top-color: var(--green); }
+  .lg-fixed-line { border-top-color: var(--muted2); border-top-style: dashed; }
+  .lg-captured { background: var(--green); opacity: .45; }
+  .lg-phantom { background: var(--amber); opacity: .5; }
+  .lg-battery { background: var(--battery); opacity: .45; }
+  .chart-caption { font-size: 11.5px; color: var(--muted2); line-height: 1.55; margin-top: 10px; }
+  .cap-green { color: var(--green2); }
+  .cap-amber { color: var(--amber); }
+  .cap-battery { color: var(--battery); }
+  .chart-hint { font-size: 11px; color: var(--dim); margin-top: 10px; text-align: center; }
+  .hidden { display: none; }
+
+  .calc-col-label { font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted2); margin: 0 2px 14px; }
+
+  /* Answer-then-see-the-effect only works if both halves are on screen at
+     once — below the breakpoint there isn't room, so this stays the
+     original single scrolling column and the two divs are plain wrappers. */
+  @media (min-width: 860px) {
+    .calc-grid { display: grid; grid-template-columns: 340px 1fr; gap: 28px; align-items: start; }
+    .calc-results { position: sticky; top: 24px; }
+  }
+
+  /* Brief highlight on the result column right after an answer changes, so
+     the "this input -> this chart" link is visible, not just theoretical.
+     Scoped to discrete answer buttons (see flashResults() in the JS) rather
+     than slider drags, which fire continuously and would flicker. */
+  @keyframes calcResultPulse {
+    0% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.45); }
+    100% { box-shadow: 0 0 0 8px rgba(74, 222, 128, 0); }
+  }
+  .calc-results.flash .hero, .calc-results.flash .chart-card { animation: calcResultPulse 0.7s ease-out; }
+  @media (prefers-reduced-motion: reduce) {
+    .calc-results.flash .hero, .calc-results.flash .chart-card { animation: none; }
+  }
+
+  @media (max-width: 400px) {
+    .hero-num { font-size: 34px; }
+  }
+
+  .explain { font-size: 12.5px; color: var(--muted2); line-height: 1.6; padding: 16px 18px; border: 1px dashed var(--border); border-radius: 12px; margin-bottom: 8px; }
+  .explain-title { font-size: 12px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; color: var(--text2); margin-bottom: 10px; }
+  .explain p { margin: 0 0 10px; }
+  .explain ul { margin: 0 0 10px; padding-left: 18px; }
+  .explain li { margin-bottom: 8px; }
+  .explain b { color: var(--text2); }
+  .explain-assumptions { font-size: 11px; color: var(--dim); margin-bottom: 0; }
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="title-row"><span class="title-dot"></span><span class="title">See what dynamic solar charging is worth</span></div>
+
+<div class="calc-grid">
+<div class="calc-inputs">
+  <div class="calc-col-label">Your setup</div>
+  <div class="card">
+    <div class="card-label">Your ZIP code <span class="val" data-out="lblZip">using CA rates</span></div>
+    <input type="text" id="zipInput" inputmode="numeric" maxlength="5" autocomplete="postal-code"
+           placeholder="e.g. 94040" class="zip-input">
+    <div class="range-ticks"><span id="zipRateNote">Enter your ZIP to use your utility's real rates</span></div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">How many EVs do you charge at home? <span class="val" data-out="lblEvs">1</span></div>
+    <div class="seg" data-group="evs">
+      <button type="button" data-val="1" class="active">1</button>
+      <button type="button" data-val="2">2</button>
+      <button type="button" data-val="3">3</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">How many major electrical appliances usually run during the day? <span class="val" data-out="lblAppliances">None</span></div>
+    <div class="seg" data-group="appliances">
+      <button type="button" data-val="0" class="active">None</button>
+      <button type="button" data-val="1">1-2</button>
+      <button type="button" data-val="2">3-4</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label"><span>How big is your solar system?</span> <span class="val" data-out="lblSystemKw">8.5 kW</span></div>
+    <input type="range" id="systemKwSlider" min="4" max="20" step="0.5" value="8.5">
+    <div class="range-ticks"><span>4 kW</span><span>20 kW</span></div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Do you have a home battery? <span class="val" data-out="lblBattery">No</span></div>
+    <div class="seg" data-group="battery">
+      <button type="button" data-val="0" class="active">No</button>
+      <button type="button" data-val="1">Yes</button>
+    </div>
+    <div class="batt-detail hidden" id="batteryDetail">
+      <div class="card-label">Battery capacity <span class="val" data-out="lblBatteryKwh">13.5 kWh</span></div>
+      <input type="range" id="batteryKwhSlider" min="5" max="30" step="0.5" value="13.5">
+      <div class="range-ticks"><span>5 kWh</span><span>30 kWh</span></div>
+    </div>
+  </div>
+
+  <div class="car-block" id="carBlock1">
+    <div class="car-block-label car-only-label hidden">Car 1</div>
+    <div class="card">
+      <div class="card-label"><span>How many days a week is <span class="single-car-label">the car</span><span class="car-only-label hidden">it</span> home during the day?</span> <span class="val" data-out="lblDaysHome1">5</span></div>
+      <input type="range" id="daysHomeSlider1" min="1" max="7" step="1" value="5">
+      <div class="range-ticks"><span>1 day</span><span>7 days</span></div>
+    </div>
+    <div class="card">
+      <div class="card-label">Average weekly mileage <span class="val" data-out="lblWeeklyMiles1">250 mi</span></div>
+      <input type="range" id="weeklyMilesSlider1" min="50" max="600" step="10" value="250">
+      <div class="range-ticks"><span>50 mi</span><span>600 mi</span></div>
+    </div>
+  </div>
+
+  <div class="car-block hidden" id="carBlock2">
+    <div class="car-block-label">Car 2</div>
+    <div class="card">
+      <div class="card-label">How many days a week is it home during the day? <span class="val" data-out="lblDaysHome2">5</span></div>
+      <input type="range" id="daysHomeSlider2" min="1" max="7" step="1" value="5">
+      <div class="range-ticks"><span>1 day</span><span>7 days</span></div>
+    </div>
+    <div class="card">
+      <div class="card-label">Average weekly mileage <span class="val" data-out="lblWeeklyMiles2">250 mi</span></div>
+      <input type="range" id="weeklyMilesSlider2" min="50" max="600" step="10" value="250">
+      <div class="range-ticks"><span>50 mi</span><span>600 mi</span></div>
+    </div>
+  </div>
+
+  <div class="car-block hidden" id="carBlock3">
+    <div class="car-block-label">Car 3</div>
+    <div class="card">
+      <div class="card-label">How many days a week is it home during the day? <span class="val" data-out="lblDaysHome3">5</span></div>
+      <input type="range" id="daysHomeSlider3" min="1" max="7" step="1" value="5">
+      <div class="range-ticks"><span>1 day</span><span>7 days</span></div>
+    </div>
+    <div class="card">
+      <div class="card-label">Average weekly mileage <span class="val" data-out="lblWeeklyMiles3">250 mi</span></div>
+      <input type="range" id="weeklyMilesSlider3" min="50" max="600" step="10" value="250">
+      <div class="range-ticks"><span>50 mi</span><span>600 mi</span></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="calc-results">
+  <div class="hero">
+    <div class="hero-label">Your estimated ampee savings</div>
+    <div class="hero-num" data-out="heroSavings">—</div>
+    <div class="hero-sub">per month, vs. what you get today with a fixed charge rate</div>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-head">
+      <span class="chart-title">Today vs. with ampee<span class="car-only-label hidden" data-out="chartCarsNote"> — both cars, one charger</span></span>
+      <span class="chart-readout"><span data-out="crosshairTime">—</span>: <b data-out="crosshairSaved">—</b> saved so far</span>
+    </div>
+    <svg id="svgChart" viewBox="0 0 640 260" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Solar surplus across one day, with the static charge setpoint and the savings that accumulate from tracking the sun instead"></svg>
+    <div class="chart-legend">
+      <span class="lg-item"><span class="lg-line lg-solar-line"></span>Solar your panels produce</span>
+      <span class="lg-item"><span class="lg-line lg-fixed-line"></span>Your charger today (fixed rate, no ampee)</span>
+      <span class="lg-item"><span class="lg-swatch lg-captured"></span>Captured by ampee</span>
+      <span class="lg-item"><span class="lg-swatch lg-phantom"></span>Pulled from the grid</span>
+      <span class="lg-item hidden" id="lgBatteryItem"><span class="lg-swatch lg-battery"></span>Charging your battery</span>
+    </div>
+    <div class="chart-caption">The dashed gray line is <b>what your charger already does today</b> — a fixed rate that can't react to the sun. <b class="cap-green">Green band</b>: solar that fixed rate wastes today (sold back for pennies) — ampee puts it in your car instead. <b class="cap-amber">Amber band</b>: grid power that fixed rate silently pulls today when solar dips — ampee throttles down instead. <span class="hidden" id="batteryCaptionNote"><b class="cap-battery">Blue band</b>: solar going to top off your battery first — both your charger today and ampee wait behind it.</span></div>
+    <div class="chart-hint">Drag your finger or mouse across the chart to see how savings build up hour by hour.</div>
+  </div>
+</div>
+</div>
+
+  <div class="explain">
+    <div class="explain-title">How this is calculated</div>
+    <p><b>The simple version:</b> every kWh of sunshine ampee puts into your car instead of selling it to the grid saves you the <b>difference between the grid price you'd otherwise pay and the small credit you'd get for exporting it</b>. On typical California rates that's about <b>34&cent;/kWh to buy vs ~3&cent;/kWh to sell &mdash; so roughly 31&cent; saved for every kWh of sun</b> you self-consume. (We value your solar at that gap, not the full retail price, because exporting it would still have earned you the few-cent credit &mdash; so this is the true extra you keep.)</p>
+    <p>A fixed amp setting can't react to the sun, so it loses money two ways:</p>
+    <ul>
+      <li><b>It wastes solar</b> (green band above). When your panels are producing more than your fixed setting draws, the extra gets sold back to the grid for pennies (about 3&cent;/kWh) instead of going into your car.</li>
+      <li><b>It pulls from the grid</b> (amber band above). When clouds or your house's own usage cut into what's left for the car, a fixed setting keeps drawing the same amps regardless — the shortfall comes from the grid, often at daytime rates.</li>
+    </ul>
+    <p>ampee adjusts your charge rate every few minutes to track actual solar output, so it captures the first kind of waste and avoids the second. Running the AC, a pool pump, or a water heater at the same time makes the second kind worse — every time one cycles on, it eats into what's left for the car, and a fixed setting can't react. Drag across the chart above to see those two effects turn into dollars, hour by hour.</p>
+    <p class="explain-assumptions">Each vehicle's charging need is calculated from its own weekly mileage at a flat ~300 Wh/mile (a typical EV average — actual efficiency varies by model, roughly 250-450 Wh/mile), spread across the days/week you said that car is home — vehicles with different schedules get different results. Uses the solar system size you set above (the suggested default grows with EV count; set your real size for a better estimate), a single charger shared across all vehicles, charging starting around 8am, and California E-ELEC time-of-use rates ($0.37/kWh daytime, $0.31/kWh overnight, $0.03/kWh solar export). If you have a home battery, we assume it's about 20% charged at sunrise, charges at up to 5kW, and always charges first — neither charging strategy draws anything, from solar or the grid, until the battery reaches full, and it never discharges into the car. A bigger battery delays both equally; it just leaves less of the day for whichever strategy you're using to make its case. Your real numbers depend on your rate plan, vehicles, and battery's own settings — this is an estimate, not a quote.</p>
+  </div>
+
+</div>
+
+<script nonce="dXGOXjrmKCeudsttgrLhNQ">
+(function () {
+  const state = { evs: 1, appliances: 0, daysHome: [5, 5, 5], weeklyMiles: [250, 250, 250], systemKw: 8.5, systemKwTouched: false, battery: false, batteryKwh: 13.5 };
+  let chartState = null;
+
+  // Suggested solar system size by EV count — used only as the size slider's
+  // DEFAULT (a household with more vehicles has usually sized its system
+  // accordingly). Once the user moves the slider (systemKwTouched), their
+  // value wins and EV-count changes no longer move it.
+  const PEAK_KW_BY_EVS = { 1: 8.5, 2: 13, 3: 17 };
+  // [frequency 0-1, depth 0-1] of appliance-driven surplus dips, by tier
+  // (0=None, 1=1-2 appliances, 2=3-4 appliances). Every tier uses the same
+  // ~12-minute bucket size (see simDay()'s anti-merge logic below), so a
+  // higher tier's higher frequency shows up as MORE separate dips rather
+  // than longer ones — dip length reads the same across tiers, only the
+  // count changes with how many appliances are running.
+  const DIP_PARAMS = [[0.24, 0.35], [0.80, 0.50], [2.5, 0.65]];
+
+  // Day / night / export $/kWh. Defaults are a PG&E-calibrated CA baseline; the ZIP
+  // lookup at the top of the page overrides them with the visitor's real utility rates
+  // (scaling this peak/off-peak split to the looked-up import rate). Mutable on purpose.
+  let RATES = { rd: 0.37, rn: 0.31, re: 0.03 };
+  const RATES_BASELINE_IMPORT = 0.338;   // PG&E E-TOU-C blended import — the scale anchor
+
+  // Core simulation of ONE charging day for a given energy need. Used two
+  // ways: per vehicle (its own representative day, via simCar), and for the
+  // chart's combined day (all cars charging back-to-back on the shared
+  // charger — at the same fixed amps, sequential sessions are equivalent to
+  // one session for the summed need, so no separate multi-car sim is needed).
+  function simDay(systemKw, applianceTier, needWh, batteryKwh) {
+    const V = 240, W = 9.5;
+    const peakW = systemKw * 1000;
+    const [dipPct, dipDepth] = DIP_PARAMS[applianceTier];
+    const ampsFixed = 24, startHour = 8;
+    const Ps = ampsFixed * V, Pmin = 5 * V, Pmax = 48 * V;
+    const stepH = 1 / 30, n = Math.round(W / stepH);
+    const windowStart = 13 - W / 2;
+    const tStart = Math.max(0, startHour - windowStart);
+    const rd = RATES.rd, rn = RATES.rn, re = RATES.re;   // set by the ZIP rate lookup (defaults if none)
+    // A home battery (batteryKwh=0 unless the visitor says they have one)
+    // never feeds the car and never competes with it for solar — it's a
+    // strict, sequential handoff. From sunrise, ALL solar goes to charging
+    // the battery and the car draws nothing at all (not even from the
+    // grid); once the battery reaches full, that world's charging strategy
+    // runs exactly as it would with no battery. Evaluated once per
+    // hypothetical world (its own battery, filling from that world's own
+    // solar), matching how the rest of this function already treats
+    // "today" and "with ampee" as two independent whole-day alternatives
+    // rather than one shared day — so a bigger battery delays BOTH equally,
+    // shrinking the daylight window left for the comparison rather than
+    // favoring either side. BATT_MAX_W (charge rate) and the 20%-at-sunrise
+    // starting charge are fixed assumptions, not user inputs — like
+    // charger amps and start time above, they're disclosed in the
+    // assumptions text rather than turned into more questions a visitor
+    // can't confidently answer.
+    const BATT_MAX_W = 5000;
+    const battCapWh = batteryKwh * 1000;
+    let battSoCStatic = battCapWh * 0.20;
+    let battSoCAmpee = battCapWh * 0.20;
+
+    const ts = [], xKw = [], sdKw = [], adKw = [], staticUsedKw = [], battKw = [], cumSaved = [];
+    let doneS = 0, doneA = 0, cumPhantomKwh = 0, cumCapturedKwh = 0;
+
+    let prevDipBlock = -1, prevBlockWasDip = false;
+    for (let i = 0; i < n; i++) {
+      const t = (i + 0.5) * stepH;
+      const block = Math.floor(t * 5); // 12-minute buckets — long enough to read as a real appliance cycle, not a blip
+      let dip;
+      if (block !== prevDipBlock) {
+        // Morning marine-layer/fog is common near sunrise and reliably burns
+        // off by midday — weight dip likelihood down as the day goes on so
+        // dips are common in the 8-9am window and rare by early afternoon,
+        // instead of a flat chance across the whole simulated day.
+        const morningDecay = 0.08 + 0.92 * Math.exp(-t / 1.0);
+        const raw = (((block + 1) * 2654435761) >>> 0) % 1000 < dipPct * morningDecay * 1000;
+        // Never let two adjacent buckets both dip — without this, a high
+        // frequency tier (like 3-4 appliances) tends to chain buckets into
+        // one long blob instead of several separate ones, which is the
+        // opposite of what more appliances should look like.
+        dip = raw && !prevBlockWasDip;
+        prevBlockWasDip = dip;
+        prevDipBlock = block;
+      } else {
+        dip = prevBlockWasDip;
+      }
+      const xFull = peakW * Math.sin(Math.PI * t / W);
+      // Static (fixed-rate) sees a temporarily reduced curve whenever an
+      // appliance cycles on — it has no way to anticipate or route around
+      // that competition. ampee draws against the true, undipped curve —
+      // a forecast-aware dynamic system isn't thrown off by momentary
+      // appliance load the way a fixed setpoint is. (Simplification: real
+      // appliance load is physically shared, not routed around — chosen so
+      // "more appliances always means more savings" holds without
+      // exception; see the module docstring.)
+      const xDipped = dip ? xFull * (1 - dipDepth) : xFull;
+
+      // Battery charges EXCLUSIVELY off each world's own solar until full —
+      // the car (either strategy) draws nothing at all, not even from the
+      // grid, while the battery still needs charge. Once the battery's
+      // full, that world's charging strategy runs exactly as it would with
+      // no battery. No discharge, ever, in either direction: the battery
+      // never feeds the car, and the car never "waits less" because of it
+      // — it's a strict, sequential handoff.
+      let sd = 0, staticSolarUsed = 0, battChargeStatic = 0;
+      if (battSoCStatic < battCapWh) {
+        battChargeStatic = Math.min(xDipped, BATT_MAX_W, (battCapWh - battSoCStatic) / stepH);
+        battSoCStatic += battChargeStatic * stepH;
+      } else if (t >= tStart && doneS < needWh && Ps > 0) {
+        sd = Math.min(Ps, (needWh - doneS) / stepH);
+        staticSolarUsed = Math.min(xDipped, sd);
+        cumPhantomKwh += Math.max(sd - xDipped, 0) * stepH;
+        doneS += sd * stepH;
+      }
+
+      let ad = 0, battChargeAmpee = 0;
+      if (battSoCAmpee < battCapWh) {
+        battChargeAmpee = Math.min(xFull, BATT_MAX_W, (battCapWh - battSoCAmpee) / stepH);
+        battSoCAmpee += battChargeAmpee * stepH;
+      } else if (doneA < needWh && xFull >= Pmin) {
+        ad = Math.min(xFull, Pmax, (needWh - doneA) / stepH);
+        doneA += ad * stepH;
+      }
+      cumCapturedKwh += Math.max(ad - staticSolarUsed, 0) * stepH;
+
+      const cum = (cumCapturedKwh / 1000) * (rn - re) + (cumPhantomKwh / 1000) * (rd - rn);
+      ts.push(t); xKw.push(xDipped / 1000); sdKw.push(sd / 1000); adKw.push(ad / 1000);
+      staticUsedKw.push(staticSolarUsed / 1000); battKw.push(battChargeAmpee / 1000); cumSaved.push(cum);
+    }
+    // Static setpoint didn't finish charging within the solar window — the
+    // remainder is forced onto the grid, same treatment as a phantom pull.
+    // Rather than dumping that whole cost onto the single last chart point
+    // (a jarring jump right at the end), ramp it in smoothly across the
+    // portion of the day static was actually charging — the line keeps
+    // climbing instead of stepping, and the final value still lands exactly
+    // on the true daily total.
+    if (doneS < needWh) {
+      const leftoverKwh = needWh - doneS;
+      // Same per-kWh weighting as every other phantom kWh in the formula
+      // below (rd - rn) — using the raw day rate here would silently
+      // overstate this term and require a corrective jump at the last point.
+      const leftoverUsd = (leftoverKwh / 1000) * (rd - rn);
+      cumPhantomKwh += leftoverKwh;
+      const activeStart = ts.findIndex(t => t >= tStart);
+      const startI = activeStart >= 0 ? activeStart : 0;
+      const span = ts.length - startI;
+      for (let i = startI; i < ts.length; i++) {
+        cumSaved[i] += leftoverUsd * ((i - startI + 1) / span);
+      }
+    }
+    // ampee ALSO didn't fully finish from daytime solar (can happen with a
+    // large enough EV count or heavy appliance load) — the shortfall is a
+    // real extra cost, billed at the off-peak night rate (ampee, unlike a
+    // fixed schedule, can defer any remainder to genuinely cheap overnight
+    // hours). Previously unhandled entirely, which silently overstated
+    // ampee's advantage whenever this happened — ramped in the same way as
+    // static's leftover, across the full window since ampee can draw at
+    // any time surplus allows.
+    if (doneA < needWh) {
+      const nightKwh = needWh - doneA;
+      const nightUsd = (nightKwh / 1000) * rn;
+      for (let i = 0; i < ts.length; i++) {
+        cumSaved[i] -= nightUsd * ((i + 1) / ts.length);
+      }
+    }
+    // Safety net: at extreme inputs (e.g. the car home only 1 day/week with
+    // high weekly mileage), the two ramps above can combine to produce a
+    // brief local DECREASE, which would look like a broken chart. A running
+    // max can only ever push a value up to match an earlier point, never
+    // down, so it can't misrepresent savings as bigger than computed — it
+    // just replaces a rare, confusing dip with a brief flat plateau.
+    for (let i = 1; i < cumSaved.length; i++) {
+      cumSaved[i] = Math.max(cumSaved[i], cumSaved[i - 1]);
+    }
+    const dailySaved = cumSaved.length ? cumSaved[cumSaved.length - 1] : 0;
+
+    return { ts, xKw, sdKw, adKw, staticUsedKw, battKw, cumSaved, W, dailySaved };
+  }
+
+  // Each vehicle is billed on its OWN representative charging day — a car
+  // home 1 day/week and another home 7 days/week have genuinely different
+  // daily energy needs and monthly charging frequency, so they can't share
+  // one input or one simulated day.
+  function simCar(systemKw, applianceTier, daysHomePerWeek, weeklyMiles, batteryKwh) {
+    // Efficiency is a flat, disclosed industry-average (~300 Wh/mile) rather
+    // than a per-model selector — real EVs range roughly 250-450 Wh/mile,
+    // but asking for exact make/model reintroduces the kind of question
+    // this calculator has already dropped twice for being too granular.
+    const EFFICIENCY_KWH_PER_MILE = 0.30;
+    // The week's total driving energy has to be delivered across only the
+    // days the car is actually home to charge from solar — fewer home-days
+    // means more kWh needed per charging session, not less.
+    const needWh = (weeklyMiles * EFFICIENCY_KWH_PER_MILE / daysHomePerWeek) * 1000;
+    const plugDays = daysHomePerWeek * (365.25 / 12 / 7);
+    const day = simDay(systemKw, applianceTier, needWh, batteryKwh);
+    return { needWh, plugDays, dailySaved: day.dailySaved, monthlySaved: day.dailySaved * plugDays };
+  }
+
+  function simHousehold(evs, applianceTier, daysHomeArr, weeklyMilesArr, systemKw, batteryKwh) {
+    const cars = [];
+    let combinedNeedWh = 0;
+    for (let i = 0; i < evs; i++) {
+      const c = simCar(systemKw, applianceTier, daysHomeArr[i], weeklyMilesArr[i], batteryKwh);
+      cars.push(c);
+      combinedNeedWh += c.needWh;
+    }
+    const totalMonthlySaved = cars.reduce((sum, c) => sum + c.monthlySaved, 0);
+    // The chart shows one representative day on which EVERY selected car
+    // charges, back-to-back on the single shared charger — so its bands and
+    // running total cover the whole household, not just car #1. The hero
+    // number stays the sum of per-car monthly totals (cars are home on
+    // different days, so the month is NOT this combined day times anything).
+    const chartDay = simDay(systemKw, applianceTier, combinedNeedWh, batteryKwh);
+    return { cars, totalMonthlySaved, chartDay };
+  }
+
+  function fmtClock(clockHour) {
+    const hh = Math.floor(clockHour), mm = Math.round((clockHour - hh) * 60);
+    const h12 = hh % 12 === 0 ? 12 : hh % 12;
+    return h12 + ':' + (mm < 10 ? '0' : '') + mm + (hh < 12 ? 'am' : 'pm');
+  }
+
+  function drawChart(s) {
+    const svg = document.getElementById('svgChart');
+    const Wpx = 640, H = 260, mL = 44, mR = 14, mT = 14, mB = 30;
+    const plotW = Wpx - mL - mR, plotH = H - mT - mB;
+    const yMaxKw = Math.max(...s.xKw, ...s.sdKw) * 1.12 || 1;
+    const xsc = (t) => mL + (t / s.W) * plotW;
+    const ysc = (kw) => mT + (1 - kw / yMaxKw) * plotH;
+    const clock0 = 13 - s.W / 2;
+
+    // Labels that grow rightward from a point (e.g. "your charger today")
+    // run off the chart and get clipped once that point lands late enough
+    // in the day — a bigger battery or more EV charging need both push
+    // these markers further right. Flip to growing leftward from the same
+    // point instead, once there isn't room left for the label's rough
+    // width (font-size 10.5 bold monospace-ish estimate; better to flip a
+    // little early than clip).
+    const growRightLabel = (x, text) => {
+      const estWidth = text.length * 6.4 + 8;
+      return x + estWidth > mL + plotW
+        ? { anchor: 'end', tx: x - 6 }
+        : { anchor: 'start', tx: x + 6 };
+    };
+
+    let p = [];
+    [0, yMaxKw / 2, yMaxKw].forEach(v => {
+      const y = ysc(v);
+      p.push('<line x1="' + mL + '" y1="' + y + '" x2="' + (mL + plotW) + '" y2="' + y + '" stroke="#2a2a2c" stroke-width="1"/>');
+      p.push('<text x="' + (mL - 6) + '" y="' + (y + 4) + '" text-anchor="end" font-size="9.5" fill="#555" font-family="monospace">' + v.toFixed(1) + '</text>');
+    });
+    p.push('<text x="' + (mL - 6) + '" y="' + (ysc(yMaxKw) - 8) + '" text-anchor="end" font-size="9" fill="#555" font-family="monospace">kW</text>');
+    for (let h = Math.ceil(clock0); h <= clock0 + s.W; h += 2) {
+      const t = h - clock0;
+      if (t < 0 || t > s.W) continue;
+      p.push('<text x="' + xsc(t) + '" y="' + (H - mB + 15) + '" text-anchor="middle" font-size="9.5" fill="#555" font-family="monospace">' + fmtClock(h) + '</text>');
+    }
+
+    const areaD = 'M' + xsc(0).toFixed(1) + ',' + ysc(0).toFixed(1) +
+      s.ts.map((t, i) => 'L' + xsc(t).toFixed(1) + ',' + ysc(s.xKw[i]).toFixed(1)).join('') +
+      'L' + xsc(s.W).toFixed(1) + ',' + ysc(0).toFixed(1) + 'Z';
+    p.push('<path d="' + areaD + '" fill="#22c55e" opacity="0.08"/>');
+
+    // Captured band: ampee's actual draw (post-battery-priority, see
+    // simDay()) above whatever the static setpoint managed to pull from
+    // solar. Clamped to the plotted (dipped) production line so an
+    // appliance dip — which only ever affects what static sees — can't
+    // make ampee's own line poke out above the green curve; that's the
+    // same simplification the chart already made pre-battery, just no
+    // longer hidden behind "ampee's draw always equals the green line."
+    const staticSolarUsed = s.staticUsedKw;
+    const ampeeKw = s.adKw.map((ad, i) => Math.min(ad, s.xKw[i]));
+    const capMask = staticSolarUsed.map((su, i) => ampeeKw[i] > su + 0.02);
+    p.push('<path d="' + band(s.ts, ampeeKw, staticSolarUsed, capMask, xsc, ysc) + '" fill="#22c55e" opacity="0.45"/>');
+
+    // Battery band: stacked directly on top of ampee's capture line, since
+    // that's the solar the battery took first — this is what makes "car
+    // waits behind the battery" visible instead of just a smaller number.
+    // Drawn BEFORE the phantom band (next) so amber — the more established,
+    // load-bearing concept on this chart — paints over it wherever the two
+    // would otherwise overlap; blue still reads clearly in whatever window
+    // is left once static's own phantom pull has ended but the battery (a
+    // separate hypothetical timeline) hasn't finished filling yet.
+    const battTop = s.battKw.map((b, i) => Math.min(ampeeKw[i] + b, s.xKw[i]));
+    const battMask = s.battKw.map(b => b > 0.02);
+    p.push('<path d="' + band(s.ts, battTop, ampeeKw, battMask, xsc, ysc) + '" fill="#38bdf8" opacity="0.55"/>');
+
+    const phMask = s.sdKw.map((sd, i) => sd > 0 && staticSolarUsed[i] < sd - 0.02);
+    p.push('<path d="' + band(s.ts, s.sdKw, staticSolarUsed, phMask, xsc, ysc) + '" fill="#f0c040" opacity="0.70"/>');
+
+    p.push('<path d="M' + s.ts.map((t, i) => xsc(t).toFixed(1) + ',' + ysc(s.xKw[i]).toFixed(1)).join('L') + '" fill="none" stroke="#22c55e" stroke-width="2"/>');
+    const sdMask = s.sdKw.map(v => v > 0);
+    let sdD = '', run = [];
+    // Drop the line to the x-axis at both ends of each run so the rise at
+    // charging-start and the fall at charging-finish are actually drawn,
+    // instead of the dashed line floating with its ends left open.
+    const flushSd = () => {
+      if (run.length >= 2) {
+        const first = run[0], last = run[run.length - 1];
+        sdD += 'M' + xsc(s.ts[first]).toFixed(1) + ',' + ysc(0).toFixed(1) +
+          'L' + run.map(i => xsc(s.ts[i]).toFixed(1) + ',' + ysc(s.sdKw[i]).toFixed(1)).join('L') +
+          'L' + xsc(s.ts[last]).toFixed(1) + ',' + ysc(0).toFixed(1);
+      }
+      run = [];
+    };
+    for (let i = 0; i < s.ts.length; i++) { if (sdMask[i]) run.push(i); else flushSd(); }
+    flushSd();
+    p.push('<path d="' + sdD + '" fill="none" stroke="#9ca3af" stroke-width="2" stroke-dasharray="6,4"/>');
+
+    const iCap = capMask.lastIndexOf(true), iPh = phMask.indexOf(true), iSd = sdMask.lastIndexOf(true), iBatt = battMask.indexOf(true);
+    // Wording matches the legend/caption exactly ("captured by ampee" /
+    // "pulled from grid") — these used to say "captured solar" / "phantom
+    // pull", jargon that didn't match the legend below it and read as two
+    // different concepts instead of one.
+    if (iCap > 0) p.push('<text x="' + (xsc(s.ts[iCap]) - 4) + '" y="' + (ysc(ampeeKw[iCap]) - 8) + '" text-anchor="end" font-size="10.5" font-weight="700" fill="#4ade80">captured by ampee</text>');
+    if (iPh >= 0) {
+      const phX = Math.max(xsc(s.ts[iPh]) - 4, mL + 55);
+      // A squeezed timeline (e.g. a big battery plus a big charging need)
+      // can land this label's x right next to "captured by ampee"'s —
+      // stack it higher instead of letting the two overlap into mush.
+      const tooClose = iCap > 0 && Math.abs(phX - (xsc(s.ts[iCap]) - 4)) < 90;
+      p.push('<text x="' + phX + '" y="' + (ysc(s.sdKw[iPh]) - (tooClose ? 22 : 8)) + '" text-anchor="end" font-size="10.5" font-weight="700" fill="#f0c040">pulled from grid</text>');
+    }
+    // Labels the dashed line directly, right on the chart, so "this is what
+    // you already have" doesn't depend on a visitor reading the legend.
+    if (iSd > 0) {
+      const lbl = growRightLabel(xsc(s.ts[iSd]), 'your charger today');
+      p.push('<text x="' + lbl.tx + '" y="' + (ysc(s.sdKw[iSd]) - 6) + '" text-anchor="' + lbl.anchor + '" font-size="10.5" font-weight="700" fill="#9ca3af">your charger today</text>');
+    }
+    if (iBatt >= 0) {
+      const lbl = growRightLabel(xsc(s.ts[iBatt]), 'charging your battery');
+      p.push('<text x="' + lbl.tx + '" y="' + (ysc(battTop[iBatt]) - 8) + '" text-anchor="' + lbl.anchor + '" font-size="10.5" font-weight="700" fill="#38bdf8">charging your battery</text>');
+    }
+
+    p.push('<g id="crosshairG"></g>');
+    svg.innerHTML = p.join('');
+    chartState = { s, xsc, ysc, mL, mT, plotW, plotH, clock0 };
+    setCrosshair(s.ts.length - 1); // default: rightmost point, full-day total, no interaction required
+  }
+
+  function band(ts, top, bot, mask, xsc, ysc) {
+    let d = '', run = [];
+    const flush = () => {
+      if (run.length < 2) { run = []; return; }
+      d += 'M' + run.map(i => xsc(ts[i]).toFixed(1) + ',' + ysc(top[i]).toFixed(1)).join('L');
+      d += 'L' + run.slice().reverse().map(i => xsc(ts[i]).toFixed(1) + ',' + ysc(bot[i]).toFixed(1)).join('L') + 'Z';
+      run = [];
+    };
+    for (let i = 0; i < ts.length; i++) { if (mask[i]) run.push(i); else flush(); }
+    flush();
+    return d;
+  }
+
+  function setCrosshair(i) {
+    if (!chartState) return;
+    const { s, xsc, ysc, mT, plotH, clock0 } = chartState;
+    i = Math.max(0, Math.min(s.ts.length - 1, i));
+    const cx = xsc(s.ts[i]);
+    const g = document.getElementById('crosshairG');
+    if (g) {
+      g.innerHTML =
+        '<line x1="' + cx + '" y1="' + mT + '" x2="' + cx + '" y2="' + (mT + plotH) + '" stroke="#6b7280" stroke-width="1"/>' +
+        '<circle cx="' + cx + '" cy="' + ysc(s.xKw[i]) + '" r="4" fill="#22c55e" stroke="#0a0a0a" stroke-width="2"/>' +
+        (s.sdKw[i] > 0 ? '<circle cx="' + cx + '" cy="' + ysc(s.sdKw[i]) + '" r="4" fill="#9ca3af" stroke="#0a0a0a" stroke-width="2"/>' : '');
+    }
+    const clock = clock0 + s.ts[i];
+    document.querySelector('[data-out="crosshairTime"]').textContent = fmtClock(clock);
+    document.querySelector('[data-out="crosshairSaved"]').textContent = '$' + Math.max(s.cumSaved[i], 0).toFixed(2);
+  }
+
+  function pointerToIndex(e) {
+    const svg = document.getElementById('svgChart');
+    const rect = svg.getBoundingClientRect();
+    const svgX = ((e.clientX - rect.left) / rect.width) * 640;
+    const { s, mL, plotW } = chartState;
+    // Clamp rather than ignore: hovering in the axis-label margin (or
+    // slightly outside the SVG during a drag) should still snap to the
+    // nearest real point, not leave the readout stuck on a stale value.
+    const clamped = Math.max(mL, Math.min(mL + plotW, svgX));
+    return Math.round(((clamped - mL) / plotW) * (s.ts.length - 1));
+  }
+
+  function updateCarBlockVisibility() {
+    // classList, not el.style: initial hiding is done with a .hidden class
+    // because the CSP drops style="display:none" attributes (see the legend
+    // comment in the stylesheet); keeping the toggle in the same mechanism
+    // avoids fighting between attribute and property styles.
+    for (let carNum = 1; carNum <= 3; carNum++) {
+      const block = document.getElementById('carBlock' + carNum);
+      if (block) block.classList.toggle('hidden', carNum > state.evs);
+    }
+    const multi = state.evs > 1;
+    document.querySelectorAll('.car-only-label').forEach(el => { el.classList.toggle('hidden', !multi); });
+    document.querySelectorAll('.single-car-label').forEach(el => { el.classList.toggle('hidden', multi); });
+    const chartNote = document.querySelector('[data-out="chartCarsNote"]');
+    if (chartNote) chartNote.textContent = state.evs === 2 ? ' — both cars, one charger' : ' — all 3 cars, one charger';
+  }
+
+  function recalc() {
+    const batteryKwh = state.battery ? state.batteryKwh : 0;
+    const h = simHousehold(state.evs, state.appliances, state.daysHome, state.weeklyMiles, state.systemKw, batteryKwh);
+    document.querySelector('[data-out="heroSavings"]').textContent = '$' + Math.max(h.totalMonthlySaved, 0).toFixed(0) + '/mo';
+    drawChart(h.chartDay);
+    updateScrollHint(); // toggling a car block changes page height
+  }
+
+  function updateBatteryVisibility() {
+    const detail = document.getElementById('batteryDetail');
+    if (detail) detail.classList.toggle('hidden', !state.battery);
+    const lgItem = document.getElementById('lgBatteryItem');
+    if (lgItem) lgItem.classList.toggle('hidden', !state.battery);
+    const captionNote = document.getElementById('batteryCaptionNote');
+    if (captionNote) captionNote.classList.toggle('hidden', !state.battery);
+  }
+
+  // Shows a small "scroll for more" pill while there's meaningfully more
+  // page below the fold, so the sticky results column on wide screens
+  // doesn't get mistaken for "that's the whole thing" when it's actually
+  // taller than the viewport. No-op if #scrollHint isn't in this template
+  // (the embedded /savings-card doesn't render it — see module docstring).
+  function updateScrollHint() {
+    const hint = document.getElementById('scrollHint');
+    if (!hint) return;
+    const remaining = document.documentElement.scrollHeight - window.innerHeight - window.scrollY;
+    hint.classList.toggle('visible', remaining > 48);
+  }
+  window.addEventListener('scroll', updateScrollHint, { passive: true });
+  window.addEventListener('resize', updateScrollHint);
+
+  function setSystemKw(kw) {
+    state.systemKw = kw;
+    document.getElementById('systemKwSlider').value = kw;
+    document.querySelector('[data-out="lblSystemKw"]').textContent = kw + ' kW';
+  }
+
+  // Briefly highlights the result column so an answer's effect on the
+  // hero/chart reads as cause-and-effect rather than a silent update.
+  // Restarts the CSS animation on repeat clicks by forcing a reflow.
+  function flashResults() {
+    const results = document.querySelector('.calc-results');
+    if (!results) return;
+    results.classList.remove('flash');
+    void results.offsetWidth;
+    results.classList.add('flash');
+  }
+
+  document.querySelectorAll('.seg').forEach(seg => {
+    seg.addEventListener('click', (e) => {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+      seg.querySelectorAll('button').forEach(b => b.classList.toggle('active', b === btn));
+      const group = seg.dataset.group;
+      if (group === 'evs') {
+        state.evs = parseFloat(btn.dataset.val);
+        document.querySelector('[data-out="lblEvs"]').textContent = btn.textContent;
+        // Nudge the size slider's default along with EV count, but only
+        // while the user hasn't set their own value — a real number the
+        // user entered always wins over our suggestion.
+        if (!state.systemKwTouched) setSystemKw(PEAK_KW_BY_EVS[state.evs]);
+        updateCarBlockVisibility();
+      } else if (group === 'appliances') {
+        state.appliances = parseFloat(btn.dataset.val);
+        document.querySelector('[data-out="lblAppliances"]').textContent = btn.textContent;
+      } else if (group === 'battery') {
+        state.battery = btn.dataset.val === '1';
+        document.querySelector('[data-out="lblBattery"]').textContent = btn.textContent;
+        updateBatteryVisibility();
+      }
+      flashResults();
+      recalc();
+    });
+  });
+
+  const systemKwSlider = document.getElementById('systemKwSlider');
+  systemKwSlider.addEventListener('input', () => {
+    state.systemKw = parseFloat(systemKwSlider.value);
+    state.systemKwTouched = true;
+    document.querySelector('[data-out="lblSystemKw"]').textContent = state.systemKw + ' kW';
+    recalc();
+  });
+
+  const batteryKwhSlider = document.getElementById('batteryKwhSlider');
+  batteryKwhSlider.addEventListener('input', () => {
+    state.batteryKwh = parseFloat(batteryKwhSlider.value);
+    document.querySelector('[data-out="lblBatteryKwh"]').textContent = state.batteryKwh + ' kWh';
+    recalc();
+  });
+
+  for (let carNum = 1; carNum <= 3; carNum++) {
+    const idx = carNum - 1;
+    const daysSlider = document.getElementById('daysHomeSlider' + carNum);
+    daysSlider.addEventListener('input', () => {
+      state.daysHome[idx] = parseFloat(daysSlider.value);
+      document.querySelector('[data-out="lblDaysHome' + carNum + '"]').textContent = state.daysHome[idx];
+      recalc();
+    });
+    const milesSlider = document.getElementById('weeklyMilesSlider' + carNum);
+    milesSlider.addEventListener('input', () => {
+      state.weeklyMiles[idx] = parseFloat(milesSlider.value);
+      document.querySelector('[data-out="lblWeeklyMiles' + carNum + '"]').textContent = state.weeklyMiles[idx] + ' mi';
+      recalc();
+    });
+  }
+
+  updateCarBlockVisibility();
+  updateBatteryVisibility();
+
+  const chartEl = document.getElementById('svgChart');
+  chartEl.addEventListener('pointermove', (e) => {
+    const i = pointerToIndex(e);
+    if (i !== null) setCrosshair(i);
+  });
+  const zipInput = document.getElementById('zipInput');
+  const zipNote = document.getElementById('zipRateNote');
+  const zipLbl = document.querySelector('[data-out="lblZip"]');
+  if (zipInput) {
+    zipInput.addEventListener('input', () => {
+      const z = zipInput.value.replace(/[^0-9]/g, '').slice(0, 5);
+      if (z !== zipInput.value) zipInput.value = z;
+      if (z.length === 5) applyZipRates(z);
+    });
+  }
+  async function applyZipRates(z) {
+    zipNote.textContent = 'Looking up your utility…';
+    try {
+      const res = await fetch('/savings-calculator/rates?zip=' + z);
+      const d = await res.json();
+      if (d.found) {
+        const scale = d.import_rate / RATES_BASELINE_IMPORT;
+        RATES = { rd: 0.37 * scale, rn: 0.31 * scale, re: d.export_rate };
+        zipLbl.textContent = d.utility.length > 24 ? d.utility.slice(0, 23) + '…' : d.utility;
+        zipNote.textContent = 'Using ' + d.plan;
+      } else {
+        RATES = { rd: 0.37, rn: 0.31, re: 0.03 };
+        zipLbl.textContent = 'national-average rates';
+        zipNote.textContent = (d.utility ? d.utility + ': no rate data. ' : 'Utility not recognized. ') + 'Using a national average.';
+      }
+    } catch (e) {
+      zipNote.textContent = 'Could not fetch rates — using defaults.';
+    }
+    recalc();
+  }
+
+  chartEl.addEventListener('pointerleave', () => {
+    if (chartState) setCrosshair(chartState.s.ts.length - 1);
+  });
+
+  recalc();
+})();
+</script>
+</body>
+</html>
