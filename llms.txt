@@ -1,0 +1,14 @@
+# ampee
+
+> ampee is a solar-aware EV charging app (iOS and Android). It watches your home's live solar production and usage and sets your car's charge rate to your surplus solar, so spare sunshine charges the car instead of being exported. Works with Tesla directly and any EV through a supported OCPP smart charger; connects to major solar inverters and home batteries.
+
+## Guides and reference
+- [How to charge your EV from solar](https://api.ampee.io/solar-ev-charging): the complete guide
+- [All guides](https://api.ampee.io/guides): by country, inverter and car
+- [Integrations](https://api.ampee.io/integrations): supported cars, inverters, chargers, batteries
+- [FAQ](https://api.ampee.io/faq): cost, hardware, safety, setup
+- [ChargeHQ alternative](https://api.ampee.io/chargehq-alternative): migrating from ChargeHQ
+
+## Apps
+- [iOS](https://apps.apple.com/app/id6787160832)
+- [Android](https://play.google.com/store/apps/details?id=io.ampee.app)
